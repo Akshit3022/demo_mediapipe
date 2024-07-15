@@ -177,6 +177,7 @@ def gen_frames():  # generate frame by frame from camera
                    b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
 
 def video_feed(request):
+    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
 
 def home(request):
