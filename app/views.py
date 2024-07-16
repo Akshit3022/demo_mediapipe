@@ -182,3 +182,63 @@ def video_feed(request):
 
 def home(request):
     return render(request, 'home.html')
+
+
+from django.shortcuts import render
+from django.http import StreamingHttpResponse, HttpResponseServerError
+import cv2
+import mediapipe as mp
+import numpy as np
+import base64
+
+# Initialize Mediapipe
+mp_drawing = mp.solutions.drawing_utils
+mp_pose = mp.solutions.pose
+
+# Function to process frame with Mediapipe and return annotated image
+def process_frame(frame):
+    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+        # Recolor image to RGB
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image.flags.writeable = False
+
+        # Make detection
+        results = pose.process(image)
+
+        # Recolor back to BGR
+        image.flags.writeable = True
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+        # Render detections
+        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                  mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
+                                  mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2)
+                                  )
+
+        # Encode image to JPEG format
+        _, encoded_image = cv2.imencode('.jpg', image)
+        return encoded_image.tobytes()
+
+# View function to stream video and detect landmarks
+def detect_landmarks(request):
+    # Function to capture video frames
+    def video_stream():
+        cap = cv2.VideoCapture(0)  # Use 0 for webcam, or use a video file path
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            processed_image = process_frame(frame)
+
+            # Encode image to base64 for HTML display
+            encoded_img = base64.b64encode(processed_image).decode('utf-8')
+            img_tag = f'<img src="data:image/jpeg;base64,{encoded_img}" />'
+
+            # Yield HTML content with processed image embedded
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + processed_image + b'\r\n')
+
+    # HTTP Response headers for Multipart Streaming
+    return StreamingHttpResponse(video_stream(), content_type='multipart/x-mixed-replace; boundary=frame')
+
