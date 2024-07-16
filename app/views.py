@@ -1,184 +1,285 @@
-# exercise/views.py
+# # exercise/views.py
 
+# from django.shortcuts import render
+# from django.http import StreamingHttpResponse
+# import cv2
+# import mediapipe as mp
+# import numpy as np
+
+# mp_drawing = mp.solutions.drawing_utils
+# mp_pose = mp.solutions.pose
+
+# # Function to calculate angle between three points
+# def calculate_angle(a, b, c):
+#     a = np.array(a)  # First point
+#     b = np.array(b)  # Mid point
+#     c = np.array(c)  # End point
+
+#     radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+#     angle = np.abs(radians * 180.0 / np.pi)
+    
+#     if angle > 180.0:
+#         angle = 360 - angle
+        
+#     return angle
+
+# def gen_frames():  # generate frame by frame from camera
+#     cap = cv2.VideoCapture(0)
+    
+#     # Initialize counters and stages for five exercises
+#     counters = [0] * 5
+#     stages = ['down'] * 5
+
+#     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+#         while True:
+#             ret, frame = cap.read()
+#             if not ret:
+#                 break
+
+#             # Recolor image to RGB
+#             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#             image.flags.writeable = False
+
+#             # Make detection
+#             results = pose.process(image)
+
+#             # Recolor back to BGR
+#             image.flags.writeable = True
+#             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+#             # Extract landmarks
+#             try:
+#                 landmarks = results.pose_landmarks.landmark
+                
+#                 # Exercise 1: Biceps Curl (left arm)
+#                 left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+#                                 landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+#                 left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+#                 left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                
+#                 left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
+                
+#                 # Visualize left angle
+#                 cv2.putText(image, str(left_angle), 
+#                             tuple(np.multiply(left_elbow, [640, 480]).astype(int)), 
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                
+#                 # Exercise 1 stage detection
+#                 if left_angle > 160:
+#                     stages[0] = "down"
+#                 if left_angle < 30 and stages[0] == 'down':
+#                     stages[0] = "up"
+#                     counters[0] += 1
+#                     print(f'Exercise 1 counter: {counters[0]}')
+                
+#                 # Repeat similar steps for the other four exercises
+#                 # Replace the joint coordinates and angle thresholds according to the specific exercises
+                
+#                 # Exercise 2: (e.g., Right Arm Curl)
+#                 right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
+#                                 landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+#                 right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+#                 right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
+                
+#                 right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+                
+#                 cv2.putText(image, str(right_angle), 
+#                             tuple(np.multiply(right_elbow, [640, 480]).astype(int)), 
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                
+#                 if right_angle > 160:
+#                     stages[1] = "down"
+#                 if right_angle < 30 and stages[1] == 'down':
+#                     stages[1] = "up"
+#                     counters[1] += 1
+#                     print(f'Exercise 2 counter: {counters[1]}')
+                
+#                 # Exercise 3: (e.g., Left Leg Stretch)
+#                 left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+#                 left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+#                 left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+                
+#                 left_leg_angle = calculate_angle(left_hip, left_knee, left_ankle)
+                
+#                 cv2.putText(image, str(left_leg_angle), 
+#                             tuple(np.multiply(left_knee, [640, 480]).astype(int)), 
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                
+#                 if left_leg_angle > 160:
+#                     stages[2] = "down"
+#                 if left_leg_angle < 30 and stages[2] == 'down':
+#                     stages[2] = "up"
+#                     counters[2] += 1
+#                     print(f'Exercise 3 counter: {counters[2]}')
+                
+#                 # Exercise 4: (e.g., Right Leg Stretch)
+#                 right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+#                 right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
+#                 right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
+                
+#                 right_leg_angle = calculate_angle(right_hip, right_knee, right_ankle)
+                
+#                 cv2.putText(image, str(right_leg_angle), 
+#                             tuple(np.multiply(right_knee, [640, 480]).astype(int)), 
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                
+#                 if right_leg_angle > 160:
+#                     stages[3] = "down"
+#                 if right_leg_angle < 30 and stages[3] == 'down':
+#                     stages[3] = "up"
+#                     counters[3] += 1
+#                     print(f'Exercise 4 counter: {counters[3]}')
+                
+#                 # Exercise 5: (e.g., Core Exercise)
+#                 # Define the joints and angle calculation specific to this exercise
+                
+#                 core_point1 = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
+#                             landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+#                 core_point2 = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
+#                             landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+#                 core_point3 = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,
+#                             landmarks[mp_pose.PoseLandmark.NOSE.value].y]
+                
+#                 core_angle = calculate_angle(core_point1, core_point2, core_point3)
+                
+#                 cv2.putText(image, str(core_angle), 
+#                             tuple(np.multiply(core_point2, [640, 480]).astype(int)), 
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                
+#                 if core_angle > 160:
+#                     stages[4] = "down"
+#                 if core_angle < 30 and stages[4] == 'down':
+#                     stages[4] = "up"
+#                     counters[4] += 1
+#                     print(f'Exercise 5 counter: {counters[4]}')
+                
+#             except:
+#                 pass
+
+#             # Render detections
+#             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+#                                     mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2), 
+#                                     mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+            
+#             ret, buffer = cv2.imencode('.jpg', image)
+#             image = buffer.tobytes()
+#             yield (b'--frame\r\n'
+#                    b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
+
+# def video_feed(request):
+#     print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+#     return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+# def home(request):
+#     return render(request, 'home.html')
+
+
+# views.py
+# pose_detection/views.py
+
+
+
+
+# # views.py
+import os
+from django.conf import settings
 from django.shortcuts import render
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse
+from django.core.files.storage import FileSystemStorage
 import cv2
 import mediapipe as mp
-import numpy as np
 
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-# Function to calculate angle between three points
-def calculate_angle(a, b, c):
-    a = np.array(a)  # First point
-    b = np.array(b)  # Mid point
-    c = np.array(c)  # End point
-
-    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
-    angle = np.abs(radians * 180.0 / np.pi)
-    
-    if angle > 180.0:
-        angle = 360 - angle
+def upload_video(request):
+    if request.method == 'POST' and request.FILES['video']:
+        video_file = request.FILES['video']
+        fs = FileSystemStorage()
+        filename = fs.save(video_file.name, video_file)
+        uploaded_file_url = fs.url(filename)
         
-    return angle
+        # Pass the uploaded_file_url to the processing view
+        return render(request, 'process_video.html', {
+            'uploaded_file_url': uploaded_file_url
+        })
+    return render(request, 'upload_video.html')
 
-def gen_frames():  # generate frame by frame from camera
-    cap = cv2.VideoCapture(0)
-    
-    # Initialize counters and stages for five exercises
-    counters = [0] * 5
-    stages = ['down'] * 5
-
-    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            # Recolor image to RGB
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image.flags.writeable = False
-
-            # Make detection
-            results = pose.process(image)
-
-            # Recolor back to BGR
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-            # Extract landmarks
-            try:
-                landmarks = results.pose_landmarks.landmark
-                
-                # Exercise 1: Biceps Curl (left arm)
-                left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                                landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-                left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-                left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-                
-                left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
-                
-                # Visualize left angle
-                cv2.putText(image, str(left_angle), 
-                            tuple(np.multiply(left_elbow, [640, 480]).astype(int)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                
-                # Exercise 1 stage detection
-                if left_angle > 160:
-                    stages[0] = "down"
-                if left_angle < 30 and stages[0] == 'down':
-                    stages[0] = "up"
-                    counters[0] += 1
-                    print(f'Exercise 1 counter: {counters[0]}')
-                
-                # Repeat similar steps for the other four exercises
-                # Replace the joint coordinates and angle thresholds according to the specific exercises
-                
-                # Exercise 2: (e.g., Right Arm Curl)
-                right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
-                                landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
-                right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
-                right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
-                
-                right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
-                
-                cv2.putText(image, str(right_angle), 
-                            tuple(np.multiply(right_elbow, [640, 480]).astype(int)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                
-                if right_angle > 160:
-                    stages[1] = "down"
-                if right_angle < 30 and stages[1] == 'down':
-                    stages[1] = "up"
-                    counters[1] += 1
-                    print(f'Exercise 2 counter: {counters[1]}')
-                
-                # Exercise 3: (e.g., Left Leg Stretch)
-                left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-                left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
-                
-                left_leg_angle = calculate_angle(left_hip, left_knee, left_ankle)
-                
-                cv2.putText(image, str(left_leg_angle), 
-                            tuple(np.multiply(left_knee, [640, 480]).astype(int)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                
-                if left_leg_angle > 160:
-                    stages[2] = "down"
-                if left_leg_angle < 30 and stages[2] == 'down':
-                    stages[2] = "up"
-                    counters[2] += 1
-                    print(f'Exercise 3 counter: {counters[2]}')
-                
-                # Exercise 4: (e.g., Right Leg Stretch)
-                right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
-                right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
-                right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
-                
-                right_leg_angle = calculate_angle(right_hip, right_knee, right_ankle)
-                
-                cv2.putText(image, str(right_leg_angle), 
-                            tuple(np.multiply(right_knee, [640, 480]).astype(int)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                
-                if right_leg_angle > 160:
-                    stages[3] = "down"
-                if right_leg_angle < 30 and stages[3] == 'down':
-                    stages[3] = "up"
-                    counters[3] += 1
-                    print(f'Exercise 4 counter: {counters[3]}')
-                
-                # Exercise 5: (e.g., Core Exercise)
-                # Define the joints and angle calculation specific to this exercise
-                
-                core_point1 = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                core_point2 = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
-                core_point3 = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,
-                            landmarks[mp_pose.PoseLandmark.NOSE.value].y]
-                
-                core_angle = calculate_angle(core_point1, core_point2, core_point3)
-                
-                cv2.putText(image, str(core_angle), 
-                            tuple(np.multiply(core_point2, [640, 480]).astype(int)), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                
-                if core_angle > 160:
-                    stages[4] = "down"
-                if core_angle < 30 and stages[4] == 'down':
-                    stages[4] = "up"
-                    counters[4] += 1
-                    print(f'Exercise 5 counter: {counters[4]}')
-                
-            except:
-                pass
-
-            # Render detections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                    mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2), 
-                                    mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+def process_video(request):
+    uploaded_file_url = request.GET.get('uploaded_file_url', None)
+    print("--------------------------------")
+    print(uploaded_file_url)
+    if uploaded_file_url:
+        # Construct the path to the uploaded file
+        uploaded_file_path = os.path.join(settings.MEDIA_URL, uploaded_file_url)
+        # print(uploaded_file_path)
+        # Initialize OpenCV video capture
+        print("base",type(settings.BASE_DIR))
+        print("none",uploaded_file_url)
+        cap = cv2.VideoCapture(str(settings.BASE_DIR) + "/" + uploaded_file_path)
+        # print(cap.read()[0])
+        w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
+        # Initialize MediaPipe pose detection
+        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+            # Initialize video writer for output
+            processed_video_path = os.path.join(settings.MEDIA_ROOT, 'processed_video1.mp4')
+            out = cv2.VideoWriter(processed_video_path,
+                       cv2.VideoWriter_fourcc(*'mp4v'),
+                       fps,
+                       (w, h))
+            # out = cv2.VideoWriter(processed_video_path, cv2.VideoWriter_fourcc(*'mp4v'), 30, (640, 480))
+            print(True)
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            current_frame = 0
             
-            ret, buffer = cv2.imencode('.jpg', image)
-            image = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n')
-
-def video_feed(request):
-    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
-
-def home(request):
-    return render(request, 'home.html')
+            while cap.isOpened():
+                ret, frame = cap.read()
+                # print("Frame --",ret)
+                if not ret:
+                    break
+                
+                current_frame += 1
+                # Recolor image to RGB
+                image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                image.flags.writeable = False
+                
+                # Make detection
+                results = pose.process(image)
+                
+                # Recolor back to BGR
+                image.flags.writeable = True
+                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                
+                # Render detections
+                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                          mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2), 
+                                          mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+                
+                # Write processed frame to output video
+                # print(cv2.imshow(image))
+                out.write(image)
+                # print(image)
+                # Optional: Show progress
+                progress = int((current_frame / frame_count) * 100)
+                print(f'Processing Progress: {progress}%')
+            
+            cap.release()
+            out.release()
+            
+            # Provide link to download processed video
+            processed_video_path = os.path.join(settings.MEDIA_URL, 'processed_video1.mp4')
+            return render(request, 'download_video.html', {
+                'processed_file_url': processed_video_path
+            })
+    
+    return HttpResponse('No video file specified.')

@@ -1,0 +1,22 @@
+<!-- process_video.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Processing Video</title>
+    <script>
+        function checkProgress() {
+            // Optionally implement AJAX to check processing progress
+        }
+    </script>
+</head>
+<body>
+    <h2>Processing Video...</h2>
+    <p id="progress_text">Processing in progress...</p>
+    <script>
+        setTimeout(() => {
+            window.location.href = '{% url "process_video" %}?uploaded_file_url={{ uploaded_file_url }}';
+        }, 1000);  // Redirect to process_video view after 1 second
+    </script>
+</body>
+</html>

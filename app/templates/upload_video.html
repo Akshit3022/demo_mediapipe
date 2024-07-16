@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Exercise Counter</title>
@@ -83,5 +83,46 @@
                 console.error('Error accessing the webcam: ', err);
             });
     </script>
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Upload</title>
+</head>
+<body>
+    <h1>Upload Video</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="video" accept="video/*" required>
+        <button type="submit">Upload and Process</button>
+    </form>
+</body>
+</html> -->
+
+<!-- pose_detection.html -->
+
+<!-- pose_detection/templates/pose_detection/pose_feed.html -->
+
+
+<!-- upload_video.html -->
+<!-- upload_video.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Video</title>
+</head>
+<body>
+    <h2>Upload a Video for Processing</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="video">
+        <button type="submit">Upload Video</button>
+    </form>
 </body>
 </html>
